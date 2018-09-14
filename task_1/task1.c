@@ -31,8 +31,12 @@ static void run_cmd(char *cmd) {
 		return;
 	}
 	char ** args = parse_cmd(cmd);
-	execvp(args[0], args);
+	int err = execvp(args[0], args);
 	free(args);
+	if (err == -1) {
+		printf("exec() error\n");
+		exit(1);
+	}
 	exit(0);
 }
 
