@@ -6,18 +6,16 @@
 #include <sys/wait.h>
 #include <string.h>
 
-int parse_cmd(char * cmd, char ** parsed) {
-        char *p;
+char ** parse_cmd(char * cmd) {
+	char *p;
         int i = 0;
         char delim[] = " \n";
-        //parsed = (char **)malloc(256 * 10 * sizeof(char));
-        //for (i = 0; i < 10; i++) {
-        //      parsed[i] = NULL;
-        //}
+        char ** parsed = (char **)malloc(100 * sysconf(_SC_ARG_MAX) / 2 * sizeof(char));
         for (p = strtok(cmd, delim); p != NULL; p = strtok(NULL, delim)) {
                 parsed[i++] = p;
         }
-        return i;
+	parsed = realloc(parsed, i);
+        return parsed;
 }
 
 static void run_cmd(char *cmd) {
@@ -28,28 +26,28 @@ static void run_cmd(char *cmd) {
 	}
 	if (pid) {
 		waitpid(pid, &status, 0);
-                printf("Return code: %d\n", WEXITSTATUS(status));
+//                if (!WEXITSTATUS(status))
+//			printf("exec() failed\n");
 		return;
 	}
-	
-	printf("I'm a child!\n");
-        char ** args = (char**)malloc(256 * 10 * sizeof(char));
-        int size = parse_cmd(cmd, args);
-        args = realloc(args, 256 * size);
-
+	char ** args = parse_cmd(cmd);
 	execvp(args[0], args);
 	free(args);
 	exit(0);
-	printf("exec* failed\n");
 }
 
 int main() {
+	const long size_max = sysconf(_SC_ARG_MAX);
 	while(1) {
 		char *cmd;
-		cmd = (char *)malloc(256 * sizeof(char));
+		cmd = (char *)malloc(size_max * sizeof(char));
 		fgets(cmd, 256, stdin);
+		if (!strcmp(cmd, "exit\n") || !strcmp(cmd, "exit")) {
+			free(cmd);
+			return(0);
+		}
+		cmd = realloc(cmd, strlen(cmd) + 1);
 		run_cmd(cmd);
-		//printf("%s\n", cmd);
 		free(cmd);
 	}
 	return 0;
