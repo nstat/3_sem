@@ -8,14 +8,14 @@
 
 char ** parse_cmd(char * cmd) {
 	char *p;
-        int i = 0;
-        char delim[] = " \n";
-        char ** parsed = (char **)malloc(100 * sysconf(_SC_ARG_MAX) / 2 * sizeof(char));
-        for (p = strtok(cmd, delim); p != NULL; p = strtok(NULL, delim)) {
-                parsed[i++] = p;
-        }
+	int i = 0;
+	char delim[] = " \n";
+	char ** parsed = (char **)malloc(100 * sysconf(_SC_ARG_MAX) / 2 * sizeof(char));
+	for (p = strtok(cmd, delim); p != NULL; p = strtok(NULL, delim)) {
+		parsed[i++] = p;
+	}
 	parsed = realloc(parsed, i);
-        return parsed;
+	return parsed;
 }
 
 static void run_cmd(char *cmd) {
