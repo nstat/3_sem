@@ -24,9 +24,6 @@ int main(int argc, char * argv[]) {
 	clock_t	t1 = clock();
 	char * mem = (char*)mmap(0, MEM_SIZE, PROT_READ, MAP_SHARED, fd, 0);
 	clock_t t2 = clock();
-	printf("Mapped at %p\n", mem);
-	/*for (int i = 0; i < MEM_SIZE; i++) {
-		printf("%c\n", mem[i]);}*/
 	close(fd);
 	FILE * fdt = fopen("time.txt", "a");
 	fprintf(fdt, "mmap\ts: %d\t%lf\n", MEM_SIZE, (t2 - t1) / (double)CLOCKS_PER_SEC);
