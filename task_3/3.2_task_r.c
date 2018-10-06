@@ -32,7 +32,7 @@ int main(int argc, char * argv[]) {
 	write(file, mem, MEM_SIZE);
         close(file);
 	FILE * fdt = fopen("time.txt", "a");
-        fprintf(fdt, "msg\ts: %d\t%lf\n", MEM_SIZE, (t2 - t1) / (double)CLOCKS_PER_SEC);
+        fprintf(fdt, "msg\tr: %d\t%lf\n", MEM_SIZE, (t2 - t1) / (double)CLOCKS_PER_SEC);
         fclose(fdt);
 	return 0;
 }
