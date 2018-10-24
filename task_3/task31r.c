@@ -55,6 +55,10 @@ int main(int argc, char * argv[]) {
 		}
 		write(fd, mem, MEM_SIZE);
 		printf("wrote\n");
+		if (mem[MEM_SIZE - 1] == 0) {
+			sem_post(sem1);
+			break;
+		}
 		sem_post(sem1);
 	}
 	if (shmdt(mem) < 0) {
@@ -70,8 +74,6 @@ int main(int argc, char * argv[]) {
 	FILE * fdt = fopen("time.txt", "a");
 	fprintf(fdt, "shmem\tr: %d\t%lf\n", MEM_SIZE, accum);
 	fclose(fdt);
-	//sem_close(sem1);
-	//sem_close(sem2);	
 	return 0;
 }
 

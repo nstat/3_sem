@@ -56,18 +56,16 @@ int main(int argc, char *argv[]) {
 		sem_wait(sem1);
 		r = read(fd, mem, MEM_SIZE);
 		printf("read\n");
-		if (r == 0) {
+		sem_post(sem2);
+		if (r <= 0) {
 			mem[0] = 0;
-			sem_post(sem2);
 			break;
 		}
 		else if (r < MEM_SIZE) {
 			for (r; r < MEM_SIZE; r++)
 				mem[r] = 0;
-			sem_post(sem2);
 			break;
 		}
-		sem_post(sem2);
 	}
 
 	if (shmdt(mem) < 0) {
