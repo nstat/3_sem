@@ -21,7 +21,7 @@ typedef struct msgbuf{
 
 int main(int argc, char * argv[]) {
 	sem_t * sem1, * sem2;
-	key_t kfl = 11, key_t key = 4096 + MEM_SIZE;
+	key_t kfl = 11, key = 4096 + MEM_SIZE;
 	msg_buf mem;
 	mem.mtype = 1;
 	int shfl, fd, r;
