@@ -30,9 +30,22 @@ int main(int argc, char * argv[]) {
 		perror("open()");
 		return -1;
 	}
+
+	key_t kfl = 11;
+	int shfl;
+	if ((shfl = shmget(kfl, 1, IPC_CREAT | 00666)) < 0) {
+		perror("shmget()");
+		return -1;
+	}	
+	char * fl;
+	if ((fl = (char *)shmat(shfl, NULL, 0)) == (char *)(-1)) {
+		perror("shmat()");
+		return -1;
+	}
+	
 	struct timespec start, stop;
 	double accum;
-	if(clock_gettime(CLOCK_MONOTONIC, &start) == -1 ) {
+	if (clock_gettime(CLOCK_MONOTONIC, &start) == -1 ) {
       		perror("clock_gettime()");
       		return EXIT_FAILURE;
     	}
@@ -49,23 +62,23 @@ int main(int argc, char * argv[]) {
 
 	while (1) {
 		sem_wait(sem2);
-		if (mem[0] == 0) {
+		if (fl[0] < 0) {
+			sem_post(sem1);
+			break;
+		}
+		else if (fl[0] > 0) {
+			write(fd, mem, (int)fl[0]);
 			sem_post(sem1);
 			break;
 		}
 		write(fd, mem, MEM_SIZE);
-		printf("wrote\n");
-		if (mem[MEM_SIZE - 1] == 0) {
-			sem_post(sem1);
-			break;
-		}
 		sem_post(sem1);
 	}
 	if (shmdt(mem) < 0) {
 		perror("shmdt()");
 		return -1;
 	}
-	if(clock_gettime(CLOCK_MONOTONIC, &stop) == -1 ) {
+	if (clock_gettime(CLOCK_MONOTONIC, &stop) == -1 ) {
       		perror("clock_gettime()");
       		return EXIT_FAILURE;
     	}
@@ -74,6 +87,10 @@ int main(int argc, char * argv[]) {
 	FILE * fdt = fopen("time.txt", "a");
 	fprintf(fdt, "shmem\tr: %d\t%lf\n", MEM_SIZE, accum);
 	fclose(fdt);
+	if (shmdt(fl) < 0) {
+		perror("shmdt()");
+		return -1;
+	}
 	return 0;
 }
 

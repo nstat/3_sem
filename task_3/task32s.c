@@ -62,7 +62,6 @@ int main(int argc, char * argv[]) {
 	while (1) {
 		sem_wait(sem1);
 		r = read(file, mem.mtext, MEM_SIZE);
-		printf("%d", r);
 		if (r <= 0) {
 			fl[0] = -1;
 			sem_post(sem2);
@@ -95,7 +94,5 @@ int main(int argc, char * argv[]) {
         fprintf(fdt, "msg\ts: %d\t%lf\n", MEM_SIZE, accum);
         fclose(fdt);
 	close(file);
-	sem_unlink(name1);
-	sem_unlink(name2);
 	return 0;
 }

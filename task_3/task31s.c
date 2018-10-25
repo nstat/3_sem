@@ -24,14 +24,27 @@ int main(int argc, char *argv[]) {
 		perror("sem_open()");
 		return -1;
 	}
+
 	int MEM_SIZE = atoi(argv[2]);
 	key_t key = 2048 + MEM_SIZE;
-	
 	int fd = open(argv[1], O_CREAT, 0777);
 	if (fd < 0) {
 		perror("open()");
 		return -1;
 	}
+
+	key_t kfl = 11;
+	int shfl;
+	if ((shfl = shmget(kfl, 1, IPC_CREAT | 00666)) < 0) {
+		perror("shmget()");
+		return -1;
+	}
+	char * fl;
+	if ((fl = (char *)shmat(shfl, NULL, 0)) == (char *)(-1)) {
+		perror("shmat()");
+		return -1;
+	}
+	fl[0] = 0;
 	
 	struct timespec start, stop;
 	double accum;
@@ -39,6 +52,7 @@ int main(int argc, char *argv[]) {
 		perror("clock_gettime()");
 		return -1;
 	}
+
 	int shmd;
 	if ((shmd = shmget(key, MEM_SIZE, IPC_CREAT | 00666)) < 0) {
 		perror("shmget()");
@@ -51,21 +65,24 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 
-	int r = MEM_SIZE + 1;
-	while (r > 0) {
+	int r;
+	while (1) {
 		sem_wait(sem1);
 		r = read(fd, mem, MEM_SIZE);
-		printf("read\n");
-		sem_post(sem2);
 		if (r <= 0) {
-			mem[0] = 0;
+			fl[0] = -1;
+			sem_post(sem2);
 			break;
 		}
 		else if (r < MEM_SIZE) {
+			fl[0] = r;
 			for (r; r < MEM_SIZE; r++)
 				mem[r] = 0;
+			
+			sem_post(sem2);
 			break;
 		}
+		sem_post(sem2);
 	}
 
 	if (shmdt(mem) < 0) {
@@ -73,7 +90,7 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 	
-	if(clock_gettime(CLOCK_MONOTONIC, &stop) == -1 ) {
+	if (clock_gettime(CLOCK_MONOTONIC, &stop) == -1 ) {
 		perror("clock_gettime()");
 		return -1;
 	}
@@ -83,6 +100,10 @@ int main(int argc, char *argv[]) {
 	fprintf(fdt, "shmem\ts: %d\t%lf\n", MEM_SIZE, accum);
 	fclose(fdt);
 	close(fd);
+	if (shmdt(fl) < 0) {
+		perror("shmdt()");
+		return -1;
+	}
 	sem_unlink(name1);
 	sem_unlink(name2);	
 	return 0;

@@ -61,7 +61,6 @@ int main(int argc, char * argv[]) {
 	while (1) {
 		sem_wait(sem2);
 		if (fl[0] < 0) {
-			printf("!\n");
 			sem_post(sem1);
 			break;
 		}
@@ -87,5 +86,7 @@ int main(int argc, char * argv[]) {
 	FILE * fdt = fopen("time.txt", "a");
         fprintf(fdt, "msg\tr: %d\t%lf\n", MEM_SIZE, accum);
         fclose(fdt);
+	sem_unlink(name1);
+	sem_unlink(name2);
 	return 0;
 }
