@@ -16,7 +16,7 @@
 int main(int argc, char *argv[]) {
 	sem_t * sem1;
 	sem_t * sem2;
-	if ((sem1 = sem_open(name1, O_CREAT, 0777, 1)) == SEM_FAILED) {
+	if ((sem1 = sem_open(name1, O_CREAT, 0777, 0)) == SEM_FAILED) {
 		perror("sem_open()");
 		return -1;
 	}
@@ -39,12 +39,14 @@ int main(int argc, char *argv[]) {
 		perror("shmget()");
 		return -1;
 	}
-	char * fl;
-	if ((fl = (char *)shmat(shfl, NULL, 0)) == (char *)(-1)) {
+	int * fl;
+	if ((fl = (int *)shmat(shfl, NULL, 0)) == (int *)(-1)) {
 		perror("shmat()");
 		return -1;
 	}
 	fl[0] = 0;
+
+	sem_wait(sem1);
 	
 	struct timespec start, stop;
 	double accum;
@@ -76,9 +78,6 @@ int main(int argc, char *argv[]) {
 		}
 		else if (r < MEM_SIZE) {
 			fl[0] = r;
-			for (r; r < MEM_SIZE; r++)
-				mem[r] = 0;
-			
 			sem_post(sem2);
 			break;
 		}
@@ -103,8 +102,6 @@ int main(int argc, char *argv[]) {
 	if (shmdt(fl) < 0) {
 		perror("shmdt()");
 		return -1;
-	}
-	sem_unlink(name1);
-	sem_unlink(name2);	
+	}	
 	return 0;
 }

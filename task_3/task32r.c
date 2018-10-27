@@ -36,8 +36,8 @@ int main(int argc, char * argv[]) {
 		perror("shmget()");
 		return -1;
 	}	
-	char * fl;
-	if ((fl = (char *)shmat(shfl, NULL, 0)) == (char *)(-1)) {
+	int * fl;
+	if ((fl = (int *)shmat(shfl, NULL, 0)) == (int *)(-1)) {
 		perror("shmat()");
 		return -1;
 	}
@@ -51,7 +51,7 @@ int main(int argc, char * argv[]) {
 		perror("msgget()");
 		return -1;
 	}
-
+	sem_wait(sem2);
 	struct timespec start, stop;
 	double accum;
 	if(clock_gettime(CLOCK_MONOTONIC, &start) == -1 ) {
@@ -69,7 +69,7 @@ int main(int argc, char * argv[]) {
 			return -1;
 		}
 		if (fl[0] > 0) {
-			write(file, mem.mtext, (int)fl[0]);
+			write(file, mem.mtext, fl[0]);
 			sem_post(sem1);
 			break;
 		}

@@ -25,7 +25,7 @@ int main(int argc, char * argv[]) {
 	msg_buf mem;
 	mem.mtype = 1;
 	int shfl, fd, r;
-	if ((sem1 = sem_open(name1, O_CREAT, 0777, 1)) == SEM_FAILED) {
+	if ((sem1 = sem_open(name1, O_CREAT, 0777, 0)) == SEM_FAILED) {
 		perror("sem_open()");
 		return -1;
 	}
@@ -37,8 +37,8 @@ int main(int argc, char * argv[]) {
 		perror("shmget()");
 		return -1;
 	}
-	char * fl;
-	if ((fl = (char *)shmat(shfl, NULL, 0)) == (char *)(-1)) {
+	int * fl;
+	if ((fl = (int *)shmat(shfl, NULL, 0)) == (int *)(-1)) {
 		perror("shmat()");
 		return -1;
 	}
@@ -52,6 +52,7 @@ int main(int argc, char * argv[]) {
 		perror("msgget()");
 		return -1;
 	}
+	sem_wait(sem1);
 	
 	struct timespec start, stop;
 	double accum;
@@ -69,8 +70,6 @@ int main(int argc, char * argv[]) {
 		}
 		if (r < MEM_SIZE) {
 			fl[0] = r;
-			for (r; r < MEM_SIZE; r++)
-				mem.mtext[r] = 0;
 			if ((msgsnd(fd, &mem, MEM_SIZE, 0)) < 0) {
 				perror("msgsnd()");
 				return -1;

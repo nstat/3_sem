@@ -37,12 +37,12 @@ int main(int argc, char * argv[]) {
 		perror("shmget()");
 		return -1;
 	}	
-	char * fl;
-	if ((fl = (char *)shmat(shfl, NULL, 0)) == (char *)(-1)) {
+	int * fl;
+	if ((fl = (int *)shmat(shfl, NULL, 0)) == (int *)(-1)) {
 		perror("shmat()");
 		return -1;
 	}
-	
+	sem_wait(sem2);
 	struct timespec start, stop;
 	double accum;
 	if (clock_gettime(CLOCK_MONOTONIC, &start) == -1 ) {
@@ -67,7 +67,7 @@ int main(int argc, char * argv[]) {
 			break;
 		}
 		else if (fl[0] > 0) {
-			write(fd, mem, (int)fl[0]);
+			write(fd, mem, fl[0]);
 			sem_post(sem1);
 			break;
 		}
@@ -91,6 +91,8 @@ int main(int argc, char * argv[]) {
 		perror("shmdt()");
 		return -1;
 	}
+	sem_unlink(name1);
+	sem_unlink(name2);
 	return 0;
 }
 

@@ -32,8 +32,8 @@ int main(int argc, char * argv[]) {
 		perror("shmget()");
 		return -1;
 	}
-	char * fl;
-	if ((fl = (char *)shmat(shfl, NULL, 0)) == (char *)(-1)) {
+	int * fl;
+	if ((fl = (int *)shmat(shfl, NULL, 0)) == (int *)(-1)) {
 		perror("shmat()");
 		return -1;
 	}
@@ -62,7 +62,7 @@ int main(int argc, char * argv[]) {
 				break;
 			}
 			else if (fl[0] > 0) {
-				write(fdout, mem, (int)fl[0]);
+				write(fdout, mem, fl[0]);
 				sem_post(sem1);
 				break;
 			}
@@ -101,10 +101,7 @@ int main(int argc, char * argv[]) {
 				break;
 			}
 			else if (r < MEM_SIZE) {
-				fl[0] = r;
-				for (r; r < MEM_SIZE; r++)
-					mem[r] = 0;
-				
+				fl[0] = r;				
 				sem_post(sem2);
 				break;
 			}
