@@ -68,11 +68,12 @@ int main(int argc, char * argv[]) {
 		perror("fork()");
 	}
 	else if (pid) { //parent //receive
-		FILE * fdout = fopen(argv[2], "w");
-		
+		//FILE * fdout = fopen(argv[2], "w");
+		int fdout = open(argv[2], O_CREAT | O_RDWR, S_IREAD | S_IWRITE);
 		while (1) {
 			if (k == 0) {
-				fprintf(fdout,"%c", (char)out);
+				char x = (char)out;
+				write(fdout, &x, 1);
 				k = 128;
 				out = 0;
 			}
