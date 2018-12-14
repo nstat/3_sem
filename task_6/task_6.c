@@ -19,6 +19,8 @@
 
 #define MYDIR "/home/nadezhda/Desktop/3_sem/task_6/"
 
+char newfiles[256] = "/home/nadezhda/backup/";					//path to backup
+
 void Daemon(const char * dir);
 void BackUp(const char * name);
 void dif(const char *file, const char *name);
@@ -57,7 +59,7 @@ void Daemon(const char * dir) {
 
 	while (1) {
 		BackUp(dir); 							///back up here 
-		sleep(10);
+		sleep(100);
 	}
 	return;
 }
@@ -66,6 +68,7 @@ void BackUp(const char * name) {
     	DIR * dir = opendir(name);
     	if(dir) {
 		char Path[PATH_MAX], *EndPtr = Path;
+		char * endfile = newfiles + strlen(newfiles);
 		struct stat info;
         	struct dirent * e;
         	strcpy(Path, name);
@@ -76,7 +79,13 @@ void BackUp(const char * name) {
 			if (!stat(Path, &info)) { 
 				if (S_ISDIR(info.st_mode)) {
 					strcat(Path, "/");
+					strcpy(endfile, e -> d_name);
+					strcat(newfiles, "/");
+					char newdir[256] = "mkdir ";
+					strcat(newdir, newfiles);
+					system(newdir);
 					BackUp(Path);
+					strcpy(endfile, "");
 				} else if (S_ISREG(info.st_mode)) { 
 					if(iftext(Path)) 
 						dif(Path, e->d_name);
@@ -84,11 +93,13 @@ void BackUp(const char * name) {
 			}
 		}
 	}
+	closedir(dir);
 	return;
 }
 
 void dif(const char * file, const char * name){
-	char newfile[256] = "/home/nadezhda/backup/";				//path to backups
+	char newfile[256];
+	strcpy(newfile, newfiles);				//path to backups
 	strcat(newfile, name);
 	char arg[256] = "diff -q ";
 	char files[256] = "";
